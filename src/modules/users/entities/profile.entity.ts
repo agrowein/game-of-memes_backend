@@ -1,5 +1,6 @@
-import { Column, Entity, OneToOne, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinTable, ManyToMany, OneToOne, PrimaryGeneratedColumn } from "typeorm";
 import { User } from "./user.entity";
+import { Card } from "../../cards/entities/card.entity";
 
 @Entity('profiles')
 export class Profile {
@@ -11,4 +12,8 @@ export class Profile {
 
   @Column({ default: 0 })
   likes: number;
+
+  @ManyToMany(() => Card)
+  @JoinTable()
+  cards: Card[];
 }
