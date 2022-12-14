@@ -27,6 +27,10 @@ export class CardsService {
     });
   }
 
+  async generateDeckOf(type: CardType) {
+    return await this.findAllByType(type);
+  }
+
   async findAllByType(type: CardType) {
     return await this.cardRepository.find({
       where: { type },
