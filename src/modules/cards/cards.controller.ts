@@ -1,8 +1,10 @@
-import { Body, Controller, Get, Param, Post, Query } from "@nestjs/common";
+import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
 import { CardsService } from './cards.service';
 import { Card, CardType } from "./entities/card.entity";
 import { CreateCardDto } from "./dto/create-card.dto";
+import { JwtGuard } from "../../jwt/jwt.guard";
 
+@UseGuards(JwtGuard)
 @Controller('cards')
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
