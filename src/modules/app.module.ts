@@ -5,7 +5,7 @@ import { UsersModule } from './users/users.module';
 import { CardsModule } from './cards/cards.module';
 import { GamesModule } from './games/games.module';
 import ormConfig from "../config/orm.config";
-import { AuthModule } from "../auth/auth.module";
+import { AuthModule } from "./auth/auth.module";
 
 @Module({
   imports: [

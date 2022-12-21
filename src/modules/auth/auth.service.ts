@@ -1,10 +1,10 @@
 import { Injectable } from "@nestjs/common";
-import { UsersService } from "../modules/users/users.service";
+import { UsersService } from "../users/users.service";
 import { SignInDto } from "./dto/sign-in.dto";
 import { SignUpDto } from "./dto/sign-up.dto";
 import { RecoveryDto } from "./dto/recovery.dto";
 import { PASSWORD_NOT_CORRECT, USER_ALREADY_EXISTS, USER_NOT_FOUND } from "./errors";
-import { CreateUserDto } from "../modules/users/dto/create-user.dto";
+import { CreateUserDto } from "../users/dto/create-user.dto";
 import { compare, hash } from "bcrypt";
 import { JwtService } from "@nestjs/jwt";
 import * as process from "process";
