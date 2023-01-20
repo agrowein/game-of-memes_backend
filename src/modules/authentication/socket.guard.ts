@@ -1,19 +1,20 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+
 import { Observable } from "rxjs";
-import { JwtService } from "@nestjs/jwt";
+import { AuthenticationService } from "./authentication.service";
 
 @Injectable()
 export class SocketGuard implements CanActivate {
-  constructor(private jwtService: JwtService) {}
+  constructor(private authenticationService: AuthenticationService) {}
 
   canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
     const client = context.switchToWs().getClient();
-    const headers = client.handshake.headers;
+    const auth = client.handshake.auth;
 
-    const token = headers?.authorization?.split(' ')[1] ?? '';
+    const token = auth.token.split(' ')[1] ?? '';
 
     if (token) {
-      const payload = this.jwtService.verify(token, { secret: 'secret' });
+      const payload = this.authenticationService.verify(token);
       client.user = { ...payload };
       return true;
     }

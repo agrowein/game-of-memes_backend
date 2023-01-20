@@ -4,7 +4,7 @@ import { GamesController } from './games.controller';
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Game } from "./entities/game.entity";
 import { CardsModule } from "../cards/cards.module";
-import { JwtModule } from "../../jwt/jwt.module";
+import { AuthenticationModule } from "../authentication/authentication.module";
 import { GamesGateway } from './games.gateway';
 import { UsersModule } from "../users/users.module";
 
@@ -12,7 +12,7 @@ import { UsersModule } from "../users/users.module";
   imports: [
     TypeOrmModule.forFeature([Game]),
     CardsModule,
-    JwtModule,
+    AuthenticationModule,
     UsersModule,
   ],
   controllers: [GamesController],

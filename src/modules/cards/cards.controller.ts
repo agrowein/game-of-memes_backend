@@ -2,7 +2,7 @@ import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/co
 import { CardsService } from './cards.service';
 import { Card, CardType } from "./entities/card.entity";
 import { CreateCardDto } from "./dto/create-card.dto";
-import { JwtGuard } from "../../jwt/jwt.guard";
+import { JwtGuard } from "../authentication/jwt.guard";
 
 @UseGuards(JwtGuard)
 @Controller('cards')

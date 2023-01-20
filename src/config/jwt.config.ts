@@ -8,6 +8,6 @@ enum EnvJwtOptions {
 export default async (configService: ConfigService): Promise<JwtModuleOptions> => ({
   secretOrPrivateKey: configService.get<string>(EnvJwtOptions.secret),
   signOptions: {
-    expiresIn: '1d',
+    expiresIn: '1y',
   }
 });

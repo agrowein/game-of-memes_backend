@@ -6,14 +6,14 @@ import { RecoveryDto } from "./dto/recovery.dto";
 import { PASSWORD_NOT_CORRECT, USER_ALREADY_EXISTS, USER_NOT_FOUND } from "./errors";
 import { CreateUserDto } from "../users/dto/create-user.dto";
 import { compare, hash } from "bcrypt";
-import { JwtService } from "@nestjs/jwt";
 import * as process from "process";
+import { AuthenticationService } from "../authentication/authentication.service";
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
-    private jwtService: JwtService,
+    private authenticationService: AuthenticationService,
   ) {}
 
   async signIn(dto: SignInDto) {
@@ -30,7 +30,7 @@ export class AuthService {
     };
 
     return {
-      access_token: await this.jwtService.signAsync(payload, { secret: process.env.JWT_SECRET }),
+      access_token: await this.authenticationService.signIn(payload),
     }
   }
 

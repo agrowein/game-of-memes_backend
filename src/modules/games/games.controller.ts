@@ -2,17 +2,17 @@ import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from "@n
 import { GamesService } from './games.service';
 import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { JwtGuard } from "../../jwt/jwt.guard";
+import { JwtGuard } from "../authentication/jwt.guard";
 
 @UseGuards(JwtGuard)
 @Controller('games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
-  @Post()
-  create(@Body() createGameDto: CreateGameDto) {
-    return this.gamesService.create(createGameDto);
-  }
+  // @Post()
+  // create(@Body() createGameDto: CreateGameDto) {
+  //   return this.gamesService.create(createGameDto);
+  // }
 
   @Get()
   findAll() {

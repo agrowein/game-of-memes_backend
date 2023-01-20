@@ -3,12 +3,12 @@ import { CardsService } from './cards.service';
 import { CardsController } from './cards.controller';
 import { TypeOrmModule } from "@nestjs/typeorm";
 import { Card } from "./entities/card.entity";
-import { JwtModule } from "../../jwt/jwt.module";
+import { AuthenticationModule } from "../authentication/authentication.module";
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([Card]),
-    JwtModule,
+    AuthenticationModule,
   ],
   controllers: [CardsController],
   providers: [CardsService],

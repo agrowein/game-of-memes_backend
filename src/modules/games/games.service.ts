@@ -7,6 +7,7 @@ import { Like, Repository } from "typeorm";
 import { CardsService } from "../cards/cards.service";
 import { CardType } from "../cards/entities/card.entity";
 import { UsersService } from "../users/users.service";
+import { AuthenticationService } from "../authentication/authentication.service";
 
 @Injectable()
 export class GamesService {
@@ -14,10 +15,14 @@ export class GamesService {
     @InjectRepository(Game) private gameRepository: Repository<Game>,
     private cardsService: CardsService,
     private usersService: UsersService,
+    private authenticationService: AuthenticationService,
   ) {}
 
-  async create(dto: CreateGameDto) {
-    return await this.gameRepository.save(dto);
+  async create(dto: CreateGameDto, userId: string) {
+    const game = this.gameRepository.create(dto);
+    const user = await this.usersService.findOne(userId);    
+    game.creator = user;
+    return await this.gameRepository.save(game);
   }
 
   async start(game: Game) {
@@ -28,7 +33,9 @@ export class GamesService {
   }
 
   async findAll() {
-    return await this.gameRepository.find();
+    return await this.gameRepository.find({ relations: {
+      players: true,
+    } });
   }
 
   async findOne(id: string) {
@@ -58,6 +65,23 @@ export class GamesService {
 
   async update(id: string, dto: UpdateGameDto) {
     return await this.gameRepository.update(id, dto);
+  }
+
+  async removeMyGame(userId: string, gameId: string) {
+    const game = await this.gameRepository.findOne({
+      where: { id: gameId },
+      select: {
+        creator: {
+          id: true
+        }
+      }
+    });
+
+    if (!game) throw new Error('нет такой игры!');
+    if (game.creator.id !== userId) throw new Error('Это не твоя игра не тебе и удалять!');
+    
+    await this.remove(gameId);
+    return game;
   }
 
   async remove(id: string) {

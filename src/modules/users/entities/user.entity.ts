@@ -18,7 +18,4 @@ export class User {
 
   @OneToOne(() => Profile, profile => profile.user)
   profile: Profile;
-
-  @ManyToOne(() => Game, game => game.creator)
-  createdGames: Game[];
 }
