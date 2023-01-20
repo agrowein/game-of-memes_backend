@@ -7,14 +7,11 @@ import {
 } from "@nestjs/websockets";
 import { GamesService } from "./games.service";
 import { Server, Socket } from "socket.io";
-import { JoinDto } from "./dto/socket/join.dto";
 import { CreateGameDto } from "./dto/create-game.dto";
 import { UseGuards } from "@nestjs/common";
-import { SocketGuard } from "../authentication/socket.guard";
-import { SocketWithUserData } from "../authentication/const";
+import { SocketGuard } from "../auth/socket.guard";
 import { GameEmits, GameMessages } from "./const";
 
-@UseGuards(SocketGuard)
 @WebSocketGateway({
   cors: {
     origin: '*',
@@ -27,15 +24,15 @@ export class GamesGateway implements OnGatewayInit, OnGatewayConnection, OnGatew
   constructor(private gameService: GamesService) {}
 
   @SubscribeMessage(GameMessages.CreateNew)
-  async handleCreateGame(client: SocketWithUserData, payload: CreateGameDto) {
-    const game = await this.gameService.create(payload, client.user.id);
+  async handleCreateGame(client: Socket, payload: CreateGameDto) {
+    const game = await this.gameService.create(payload, '');
     this.server.sockets.emit(GameEmits.UpdatedGame, game);
   }
 
   @SubscribeMessage(GameMessages.Delete)
-  async handleDeleteAllGames(client: SocketWithUserData, id: string) {
+  async handleDeleteAllGames(client: Socket, id: string) {
     try {
-      const deletedGame = await this.gameService.removeMyGame(client.user.id, id);
+      const deletedGame = await this.gameService.removeMyGame('', id);
       this.server.sockets.emit(GameEmits.DeletedGame, deletedGame);
     } catch (e) {
       client.emit(GameEmits.Error, e.message);

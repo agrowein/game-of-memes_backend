@@ -1,9 +1,9 @@
-import { Controller, Get, Body, Patch, Param, Delete, UseGuards } from "@nestjs/common";
+import { Controller, Get, Body, Patch, Param, Delete, Req, Post, UseGuards } from "@nestjs/common";
 import { UsersService } from './users.service';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { JwtGuard } from "../authentication/jwt.guard";
+import { AccessTokenGuard } from "../auth/access-token.guard";
 
-@UseGuards(JwtGuard)
+@UseGuards(AccessTokenGuard)
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}
@@ -18,6 +18,13 @@ export class UsersController {
     return this.usersService.findOne(id);
   }
 
+  @Post('me')
+  async getCurrentUser(@Req() req) {
+    console.log(req.user);
+    
+    return await this.usersService.findOne(req.user.id);
+  }
+
   @Patch(':id')
   async update(@Param('id') id: string, @Body() dto: UpdateUserDto) {
     return this.usersService.update(id, dto);
@@ -26,11 +33,5 @@ export class UsersController {
   @Delete(':id')
   async remove(@Param('id') id: string) {
     return this.usersService.remove(id);
-  }
-
-  @Delete('/all')
-  async removeAll() {
-    const games = await this.findAll();
-    games.forEach(el => this.remove(el.id));
   }
 }

@@ -1,10 +1,8 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from "@nestjs/common";
 import { GamesService } from './games.service';
-import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { JwtGuard } from "../authentication/jwt.guard";
+import { AccessTokenGuard } from "../auth/access-token.guard";
 
-@UseGuards(JwtGuard)
 @Controller('games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}

@@ -16,6 +16,9 @@ export class User {
   @Column({ nullable: true })
   nickname: string;
 
+  @Column()
+  refreshToken: string;
+
   @OneToOne(() => Profile, profile => profile.user)
   profile: Profile;
 }

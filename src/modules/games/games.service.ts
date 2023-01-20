@@ -7,7 +7,6 @@ import { Like, Repository } from "typeorm";
 import { CardsService } from "../cards/cards.service";
 import { CardType } from "../cards/entities/card.entity";
 import { UsersService } from "../users/users.service";
-import { AuthenticationService } from "../authentication/authentication.service";
 
 @Injectable()
 export class GamesService {
@@ -15,7 +14,6 @@ export class GamesService {
     @InjectRepository(Game) private gameRepository: Repository<Game>,
     private cardsService: CardsService,
     private usersService: UsersService,
-    private authenticationService: AuthenticationService,
   ) {}
 
   async create(dto: CreateGameDto, userId: string) {
