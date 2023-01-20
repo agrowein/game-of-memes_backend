@@ -27,4 +27,10 @@ export class UsersController {
   async remove(@Param('id') id: string) {
     return this.usersService.remove(id);
   }
+
+  @Delete('/all')
+  async removeAll() {
+    const games = await this.findAll();
+    games.forEach(el => this.remove(el.id));
+  }
 }

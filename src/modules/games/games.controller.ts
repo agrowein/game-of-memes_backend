@@ -33,4 +33,10 @@ export class GamesController {
   remove(@Param('id') id: string) {
     return this.gamesService.remove(id);
   }
+
+  @Delete('/all')
+  async removeAll() {
+    const games = await this.findAll();
+    games.forEach(el => this.remove(el.id));
+  }
 }

@@ -13,6 +13,9 @@ export class Game {
   @Column({ nullable: true, select: false })
   password: string;
 
+  @Column()
+  playersCount: number;
+
   @Column({ default: new Date() })
   createdAt: Date;
 
