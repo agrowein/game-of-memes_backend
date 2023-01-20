@@ -5,7 +5,9 @@ import { UsersModule } from './users/users.module';
 import { CardsModule } from './cards/cards.module';
 import { GamesModule } from './games/games.module';
 import ormConfig from "../config/orm.config";
-import { AuthModule } from "../auth/auth.module";
+import { AuthModule } from "./auth/auth.module";
+import { AccessTokenStrategy } from './auth/access-token.strategy';
+import { RefreshTokenStrategy } from './auth/refresh-token.strategy';
 
 @Module({
   imports: [
@@ -21,6 +23,6 @@ import { AuthModule } from "../auth/auth.module";
     GamesModule,
   ],
   controllers: [],
-  providers: [],
+  providers: [AccessTokenStrategy, RefreshTokenStrategy],
 })
-export class AppModule {}
+export class IndexModule {}

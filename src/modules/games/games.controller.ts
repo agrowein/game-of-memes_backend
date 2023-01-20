@@ -1,18 +1,16 @@
 import { Controller, Get, Post, Body, Patch, Param, Delete, UseGuards } from "@nestjs/common";
 import { GamesService } from './games.service';
-import { CreateGameDto } from './dto/create-game.dto';
 import { UpdateGameDto } from './dto/update-game.dto';
-import { JwtGuard } from "../../jwt/jwt.guard";
+import { AccessTokenGuard } from "../auth/access-token.guard";
 
-@UseGuards(JwtGuard)
 @Controller('games')
 export class GamesController {
   constructor(private readonly gamesService: GamesService) {}
 
-  @Post()
-  create(@Body() createGameDto: CreateGameDto) {
-    return this.gamesService.create(createGameDto);
-  }
+  // @Post()
+  // create(@Body() createGameDto: CreateGameDto) {
+  //   return this.gamesService.create(createGameDto);
+  // }
 
   @Get()
   findAll() {
@@ -32,5 +30,11 @@ export class GamesController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.gamesService.remove(id);
+  }
+
+  @Delete('/all')
+  async removeAll() {
+    const games = await this.findAll();
+    games.forEach(el => this.remove(el.id));
   }
 }

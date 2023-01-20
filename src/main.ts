@@ -1,7 +1,8 @@
 import { NestFactory } from '@nestjs/core';
-import { AppModule } from './modules/app.module';
+import { IndexModule } from './modules/index.module';
 
 (async () => {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create(IndexModule);
+  app.enableCors();
   await app.listen(3000);
 })();
