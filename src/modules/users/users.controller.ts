@@ -20,8 +20,6 @@ export class UsersController {
 
   @Post('me')
   async getCurrentUser(@Req() req) {
-    console.log(req.user);
-    
     return await this.usersService.findOne(req.user.id);
   }
 

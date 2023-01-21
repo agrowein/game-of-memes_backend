@@ -3,4 +3,5 @@ export class CreateUserDto {
   password: string;
   nickname?: string;
   refreshToken?: string;
+  avatar?: string;
 }

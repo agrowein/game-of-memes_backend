@@ -19,6 +19,9 @@ export class User {
   @Column()
   refreshToken: string;
 
+  @Column({ nullable: true })
+  avatar: string;
+
   @OneToOne(() => Profile, profile => profile.user)
   profile: Profile;
 }

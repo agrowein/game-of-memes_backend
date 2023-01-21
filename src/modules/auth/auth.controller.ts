@@ -30,6 +30,8 @@ export class AuthController {
   @Post('refresh')
   async refresh(@Req() req) {
     const { id, refreshToken } = req.user;
+    console.log(refreshToken);
+    
     return await this.authService.refreshToken(id, refreshToken);
   }
 }

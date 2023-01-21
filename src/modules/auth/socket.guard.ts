@@ -1,24 +1,28 @@
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 
 import { Observable } from "rxjs";
+import { AuthService } from "./auth.service";
 
 @Injectable()
 export class SocketGuard implements CanActivate {
-  constructor() {}
+  constructor(private authService: AuthService) {}
 
-  canActivate(context: ExecutionContext): boolean | Promise<boolean> | Observable<boolean> {
+  async canActivate(context: ExecutionContext): Promise<boolean> {
     const client = context.switchToWs().getClient();
     const auth = client.handshake.auth;
 
     const token = auth.token.split(' ')[1] ?? '';
+    
 
-    // if (token) {
-    //   const payload = this.authenticationService.verify(token);
-    //   client.user = { ...payload };
-    //   return true;
-    // }
+    if (token) {
+      const payload = await this.authService.verifyToken(token);
+    console.log(payload);
 
-    // client.emit('error', '401 Authorization');
+      client.user = { ...payload };
+      return true;
+    }
+
+    client.emit('error', '401 Authorization');
     return false;
   }
 }

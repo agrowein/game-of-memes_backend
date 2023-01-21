@@ -17,6 +17,12 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
+  async verifyToken(token: string) {
+    return await this.jwtService.verifyAsync(token, {
+      secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
+    });
+  }
+
   async validateUser(email: string, pass: string) {
     const user = await this.usersService.findOneByEmail(email);
     if (!user) throw new Error(USER_NOT_FOUND);
@@ -97,7 +103,7 @@ export class AuthService {
       refreshToken,
     };
   }
-  
+
   async refreshToken(id: string, token: string) {
     const user = await this.usersService.findOne(id);
 
