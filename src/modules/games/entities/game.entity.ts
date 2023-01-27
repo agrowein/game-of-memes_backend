@@ -1,6 +1,16 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import { User } from "../../users/entities/user.entity";
-import { Card } from "../../cards/entities/card.entity";
+import {
+  Column,
+  Entity,
+  JoinTable,
+  ManyToMany,
+  ManyToOne,
+  OneToMany, OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { User } from '../../users/entities/user.entity';
+import { Card } from '../../cards/entities/card.entity';
+import { PlayStatus } from "../const";
+import { History } from "./history.entity";
 
 @Entity('games')
 export class Game {
@@ -12,6 +22,9 @@ export class Game {
 
   @Column({ nullable: true, select: false })
   password: string;
+
+  @Column({ type: "enum", default: PlayStatus.Pending, enum: PlayStatus })
+  status: PlayStatus;
 
   @Column()
   playersCount: number;
@@ -25,7 +38,10 @@ export class Game {
   @ManyToOne(() => User)
   creator: User;
 
-  @ManyToMany(() => User)
+  @OneToOne(() => History, history => history.game)
+  history: History;
+
+  @OneToMany(() => User, user => user.currentGame)
   @JoinTable()
   players: User[];
 

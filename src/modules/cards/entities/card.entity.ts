@@ -1,8 +1,8 @@
-import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 export enum CardType {
   situation = 'situation',
-  picture  = 'picture',
+  picture = 'picture',
 }
 
 @Entity('cards')

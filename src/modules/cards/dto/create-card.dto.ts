@@ -1,4 +1,4 @@
-import { CardType } from "../entities/card.entity";
+import { CardType } from '../entities/card.entity';
 
 export class CreateCardDto {
   type: CardType;

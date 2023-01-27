@@ -1,7 +1,7 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
+import { CanActivate, ExecutionContext, Injectable } from '@nestjs/common';
 
-import { Observable } from "rxjs";
-import { AuthService } from "./auth.service";
+import { Observable } from 'rxjs';
+import { AuthService } from './auth.service';
 
 @Injectable()
 export class SocketGuard implements CanActivate {
@@ -12,11 +12,9 @@ export class SocketGuard implements CanActivate {
     const auth = client.handshake.auth;
 
     const token = auth.token.split(' ')[1] ?? '';
-    
 
     if (token) {
       const payload = await this.authService.verifyToken(token);
-    console.log(payload);
 
       client.user = { ...payload };
       return true;

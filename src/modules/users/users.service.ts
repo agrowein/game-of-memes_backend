@@ -1,10 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { InjectRepository } from "@nestjs/typeorm";
-import { User } from "./entities/user.entity";
-import { Repository } from "typeorm";
-import { Profile } from "./entities/profile.entity";
+import { InjectRepository } from '@nestjs/typeorm';
+import { User } from './entities/user.entity';
+import { Repository } from 'typeorm';
+import { Profile } from './entities/profile.entity';
 
 @Injectable()
 export class UsersService {
@@ -25,23 +25,32 @@ export class UsersService {
     return await this.userRepository.find();
   }
 
+  async updateLastSocketId(id: string, socketId: string) {
+    const user = await this.findOne(id);
+    user.lastSockedId = socketId;
+    return await this.userRepository.save(user);
+  }
+
   async findOne(id: string) {
     return await this.userRepository.findOne({
       where: { id },
+      relations: {
+        currentGame: true,
+      }
     });
   }
 
   async findOneByEmail(email: string) {
     return await this.userRepository.findOne({
       where: { email },
-    })
+    });
   }
 
   async getUserPassword(id: string) {
     return await this.userRepository.findOne({
       where: { id },
       select: { password: true },
-    })
+    });
   }
 
   async update(id: string, dto: UpdateUserDto) {

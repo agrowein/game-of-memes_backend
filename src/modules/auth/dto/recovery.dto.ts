@@ -1,3 +1,3 @@
 export class RecoveryDto {
-  email: string
+  email: string;
 }

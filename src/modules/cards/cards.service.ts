@@ -1,16 +1,18 @@
 import { Injectable } from '@nestjs/common';
-import { InjectRepository } from "@nestjs/typeorm";
-import { Card, CardType } from "./entities/card.entity";
-import { Repository } from "typeorm";
-import { CreateCardDto } from "./dto/create-card.dto";
-import { UpdateCardDto } from "./dto/update-card.dto";
+import { InjectRepository } from '@nestjs/typeorm';
+import { Card, CardType } from './entities/card.entity';
+import { Repository } from 'typeorm';
+import { CreateCardDto } from './dto/create-card.dto';
+import { UpdateCardDto } from './dto/update-card.dto';
 
 @Injectable()
 export class CardsService {
-  constructor(@InjectRepository(Card) private cardRepository: Repository<Card>) {}
+  constructor(
+    @InjectRepository(Card) private cardRepository: Repository<Card>,
+  ) {}
 
   create(dto: CreateCardDto) {
-    return this.cardRepository.create(dto);
+    return this.cardRepository.save(dto);
   }
 
   async save(card: Card) {
@@ -34,7 +36,7 @@ export class CardsService {
   async findAllByType(type: CardType) {
     return await this.cardRepository.find({
       where: { type },
-    })
+    });
   }
 
   async update(id: string, dto: UpdateCardDto) {

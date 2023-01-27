@@ -1,6 +1,12 @@
-import { Column, Entity, ManyToOne, OneToOne, PrimaryGeneratedColumn } from "typeorm";
-import { Profile } from "./profile.entity";
-import { Game } from "../../games/entities/game.entity";
+import {
+  Column,
+  Entity,
+  ManyToOne, OneToMany,
+  OneToOne,
+  PrimaryGeneratedColumn,
+} from 'typeorm';
+import { Profile } from './profile.entity';
+import { Game } from '../../games/entities/game.entity';
 
 @Entity('users')
 export class User {
@@ -22,6 +28,12 @@ export class User {
   @Column({ nullable: true })
   avatar: string;
 
-  @OneToOne(() => Profile, profile => profile.user)
+  @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
+
+  @ManyToOne(() => Game, game => game.players)
+  currentGame: Game;
+
+  @Column({ nullable: true })
+  lastSockedId: string;
 }

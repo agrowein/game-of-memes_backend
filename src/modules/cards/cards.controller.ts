@@ -1,8 +1,16 @@
-import { Body, Controller, Get, Param, Post, Query, UseGuards } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  Get,
+  Param,
+  Post,
+  Query,
+  UseGuards,
+} from '@nestjs/common';
 import { CardsService } from './cards.service';
-import { Card, CardType } from "./entities/card.entity";
-import { CreateCardDto } from "./dto/create-card.dto";
-import { AccessTokenGuard } from "../auth/access-token.guard";
+import { Card, CardType } from './entities/card.entity';
+import { CreateCardDto } from './dto/create-card.dto';
+import { AccessTokenGuard } from '../auth/access-token.guard';
 
 @Controller('cards')
 export class CardsController {
@@ -10,7 +18,7 @@ export class CardsController {
 
   @Get()
   async getAll() {
-    return await this.cardsService.findAll()
+    return await this.cardsService.findAll();
   }
 
   @Get()

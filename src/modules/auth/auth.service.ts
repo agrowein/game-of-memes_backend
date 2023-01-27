@@ -1,13 +1,17 @@
-import { Injectable } from "@nestjs/common";
-import { UsersService } from "../users/users.service";
-import { SignInDto } from "./dto/sign-in.dto";
-import { SignUpDto } from "./dto/sign-up.dto";
-import { RecoveryDto } from "./dto/recovery.dto";
-import { PASSWORD_NOT_CORRECT, USER_ALREADY_EXISTS, USER_NOT_FOUND } from "./errors";
-import { CreateUserDto } from "../users/dto/create-user.dto";
-import { compare, hash } from "bcrypt";
-import { ConfigService } from "@nestjs/config";
-import { JwtService } from "@nestjs/jwt";
+import { Injectable } from '@nestjs/common';
+import { UsersService } from '../users/users.service';
+import { SignInDto } from './dto/sign-in.dto';
+import { SignUpDto } from './dto/sign-up.dto';
+import { RecoveryDto } from './dto/recovery.dto';
+import {
+  PASSWORD_NOT_CORRECT,
+  USER_ALREADY_EXISTS,
+  USER_NOT_FOUND,
+} from './errors';
+import { CreateUserDto } from '../users/dto/create-user.dto';
+import { compare, hash } from 'bcrypt';
+import { ConfigService } from '@nestjs/config';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
@@ -27,11 +31,13 @@ export class AuthService {
     const user = await this.usersService.findOneByEmail(email);
     if (!user) throw new Error(USER_NOT_FOUND);
 
-    const { password, ...other } = await this.usersService.getUserPassword(user.id);
+    const { password, ...other } = await this.usersService.getUserPassword(
+      user.id,
+    );
 
     const passIsCorrect = await compare(pass, password);
     if (!passIsCorrect) throw new Error(PASSWORD_NOT_CORRECT);
-    
+
     return other;
   }
 
@@ -83,7 +89,7 @@ export class AuthService {
         },
         {
           secret: this.configService.get<string>('JWT_ACCESS_SECRET'),
-          expiresIn: '15m',
+          expiresIn: '1d',
         },
       ),
       this.jwtService.signAsync(
@@ -108,7 +114,7 @@ export class AuthService {
     const user = await this.usersService.findOne(id);
 
     const isCorrect = await compare(token, user.refreshToken);
-    if (!isCorrect) throw new Error("Чтото-там");
+    if (!isCorrect) throw new Error('Чтото-там');
 
     const tokens = await this.getTokens(user.id, user.nickname);
     await this.updateRefreshToken(user.id, tokens.refreshToken);
