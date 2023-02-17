@@ -10,8 +10,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Gameplay } from "./interfaces/Gameplay.interface";
 import { randomUUID } from "crypto";
-import { remove, uniqBy } from 'lodash';
-import { IPlayer } from "./interfaces/Player.interface";
+
 
 @Injectable()
 export class GamesService {
@@ -123,14 +122,14 @@ export class GamesService {
     if (!userIsExist) {
       game.players.push(user);
       game = await this.gameRepository.save(game);
-    }
 
-    gameplay.currentRound.players.push({
-      id: user.id,
-      cards: user.activeDeck,
-      nickname: user.nickname,
-      avatarURL: user.avatar,
-    });
+      gameplay.currentRound.players.push({
+        id: user.id,
+        cards: user.activeDeck,
+        nickname: user.nickname,
+        avatarURL: user.avatar,
+      });
+    }
     gameplay.currentRound.ready.set(userId, false);
     gameplay.save();
 
@@ -181,7 +180,10 @@ export class GamesService {
   async setPlayerStatus(gameId: string, userId: string, status: boolean) {
     const gameplay = await this.gameplayModel.findOne({ gameId: gameId });
     const isExists = gameplay.currentRound.ready.has(userId);
-    if (isExists) gameplay.currentRound.ready.set(userId, status);
+    if (isExists) {
+      gameplay.currentRound.ready.set(userId, status);
+      gameplay.save();
+    }
   }
 
   async getMyCards(userId: string) {}

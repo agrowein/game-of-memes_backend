@@ -60,6 +60,7 @@ export class GamesGateway
       const game = await this.gameService.join(client.user.id, gameID);
       client.join(gameID);
       this.server.sockets.emit(GameEmits.UpdatedGame, game);
+      this.server.to(gameID).emit('player-joined', client.user.id);
     } catch (e) {
       client.emit('error', e.message);
     }
