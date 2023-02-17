@@ -4,7 +4,7 @@ import {
   Body,
   Patch,
   Param,
-  Delete,
+  Delete, Query,
 } from '@nestjs/common';
 import { GamesService } from './games.service';
 import { UpdateGameDto } from './dto/update-game.dto';
@@ -33,9 +33,11 @@ export class GamesController {
     return this.gamesService.remove(id);
   }
 
-  @Delete('/all')
-  async removeAll() {
-    const games = await this.findAll();
-    games.forEach((el) => this.remove(el.id));
+  @Delete()
+  async removeAll(@Query('all') all: boolean) {
+    if (all) {
+      const games = await this.findAll();
+      games.forEach((el) => this.remove(el.id));
+    }
   }
 }

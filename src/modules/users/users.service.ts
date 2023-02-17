@@ -27,7 +27,6 @@ export class UsersService {
 
   async updateLastSocketId(id: string, socketId: string) {
     const user = await this.findOne(id);
-    user.lastSockedId = socketId;
     return await this.userRepository.save(user);
   }
 
@@ -36,6 +35,7 @@ export class UsersService {
       where: { id },
       relations: {
         currentGame: true,
+        activeDeck: true,
       }
     });
   }

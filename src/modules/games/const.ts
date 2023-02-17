@@ -6,18 +6,20 @@ export enum GameEmits {
   ChangeStatus = 'change-status',
   Started = 'game-started',
   PlayerChooseSituation = 'player-choose-situation',
+  GameFrame = 'game-frame',
 }
 
 export enum GameMessages {
-  CreateNew = 'create-new-game',
+  CreateNew = 'create',
   Delete = 'delete-game',
   Update = 'update-game',
-  Join = 'join-to-game',
+  Join = 'join',
   Leave = 'leave-from-game',
   UpdateAll = 'update-all',
   Status = 'set-status',
   Start = 'start',
-  ChooseSituation = 'choose-situation'
+  ChooseSituation = 'choose-situation',
+  ReadyPlayRound = 'ready-play-round'
 }
 
 export enum PlayStatus {

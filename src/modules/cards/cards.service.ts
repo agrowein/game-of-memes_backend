@@ -1,49 +1,38 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Card, CardType } from './entities/card.entity';
+import { Reaction } from './entities/reaction.entity';
 import { Repository } from 'typeorm';
-import { CreateCardDto } from './dto/create-card.dto';
+import { CreateReactionDto } from './dto/create-reaction.dto';
 import { UpdateCardDto } from './dto/update-card.dto';
+import { Situation } from "./entities/situation.entity";
+import { CreateSituationDto } from "./dto/create-situation.dto";
 
 @Injectable()
 export class CardsService {
   constructor(
-    @InjectRepository(Card) private cardRepository: Repository<Card>,
+    @InjectRepository(Reaction) private reactionRepository: Repository<Reaction>,
+    @InjectRepository(Situation) private situationRepository: Repository<Situation>,
   ) {}
 
-  create(dto: CreateCardDto) {
-    return this.cardRepository.save(dto);
+  async createReaction(dto: CreateReactionDto) {
+    return await this.reactionRepository.save(dto);
   }
 
-  async save(card: Card) {
-    return await this.cardRepository.save(card);
+  async createSituation(dto: CreateSituationDto) {
+    return await this.situationRepository.save(dto);
   }
 
-  async findAll() {
-    return await this.cardRepository.find();
+  async findAllReactions() {
+    return await this.reactionRepository.find();
   }
 
-  async findOne(id: string) {
-    return await this.cardRepository.findOne({
+  async findAllSituations() {
+    return await this.situationRepository.find();
+  }
+
+  async findOneReaction(id: string) {
+    return await this.reactionRepository.findOne({
       where: { id },
     });
-  }
-
-  async generateDeckOf(type: CardType) {
-    return await this.findAllByType(type);
-  }
-
-  async findAllByType(type: CardType) {
-    return await this.cardRepository.find({
-      where: { type },
-    });
-  }
-
-  async update(id: string, dto: UpdateCardDto) {
-    return await this.cardRepository.update(id, dto);
-  }
-
-  async remove(id: string) {
-    return await this.cardRepository.delete(id);
   }
 }

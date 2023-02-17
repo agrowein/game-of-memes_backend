@@ -2,15 +2,12 @@ import {
   Column,
   Entity,
   JoinTable,
-  ManyToMany,
   ManyToOne,
-  OneToMany, OneToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
-import { Card } from '../../cards/entities/card.entity';
 import { PlayStatus } from "../const";
-import { History } from "./history.entity";
 
 @Entity('games')
 export class Game {
@@ -35,21 +32,13 @@ export class Game {
   @Column({ nullable: true })
   startedAt: Date;
 
-  @ManyToOne(() => User)
-  creator: User;
+  @Column({ nullable: true })
+  gameplayID: string;
 
-  @OneToOne(() => History, history => history.game)
-  history: History;
+  @ManyToOne(() => User, { cascade: true })
+  creator: User;
 
   @OneToMany(() => User, user => user.currentGame)
   @JoinTable()
   players: User[];
-
-  @ManyToMany(() => Card)
-  @JoinTable()
-  pictures: Card[];
-
-  @ManyToMany(() => Card)
-  @JoinTable()
-  situations: Card[];
 }

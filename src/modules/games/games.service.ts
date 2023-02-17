@@ -1,17 +1,17 @@
 import { Injectable } from '@nestjs/common';
 import { CreateGameDto } from './dto/create-game.dto';
-import { UpdateGameDto } from './dto/update-game.dto';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Game } from './entities/game.entity';
 import { Like, Repository } from 'typeorm';
 import { CardsService } from '../cards/cards.service';
-import { CardType } from '../cards/entities/card.entity';
 import { UsersService } from '../users/users.service';
 import { PlayStatus } from "./const";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Gameplay } from "./interfaces/Gameplay.interface";
-import { checkReady } from "./utils";
+import { randomUUID } from "crypto";
+import { remove, uniqBy } from 'lodash';
+import { IPlayer } from "./interfaces/Player.interface";
 
 @Injectable()
 export class GamesService {
@@ -24,13 +24,27 @@ export class GamesService {
 
   async create(dto: CreateGameDto, userId: string) {
     const game = this.gameRepository.create(dto);
+    const situations = await this.cardsService.findAllSituations();
+    const first = situations.pop();
     game.creator = await this.usersService.findOne(userId);
+    game.players = [];
+    game.id = randomUUID();
 
-    await this.gameplayModel.create({
+    const gameplay = await this.gameplayModel.create({
+      currentRound: {
+        status: 'pending',
+        players: [],
+        situation: first,
+        reactions: new Map<string, string>(),
+        ready: new Map<string, boolean>(),
+      },
       gameId: game.id,
-      ready: [],
-      stack: [],
+      stack: [...situations],
+      rounds: [],
     });
+    gameplay.save();
+
+    game.gameplayID = gameplay.id;
 
     return await this.gameRepository.save(game);
   }
@@ -39,15 +53,6 @@ export class GamesService {
     const { currentGame } = await this.usersService.findOne(userId);
     currentGame.startedAt = new Date();
     currentGame.status = PlayStatus.Started;
-    currentGame.pictures = await this.cardsService.generateDeckOf(CardType.picture);
-    currentGame.situations = await this.cardsService.generateDeckOf(
-      CardType.situation,
-    );
-    await this.gameplayModel.updateOne({
-      gameId: currentGame.id,
-    }, {
-      stack: Array(20).fill(currentGame.players.map(e => e.id)).flat(),
-    });
     return await this.gameRepository.save(currentGame);
   }
 
@@ -59,16 +64,27 @@ export class GamesService {
     });
   }
 
+  // async playerReadyPlayRound(gameId: string, userId: string) {
+  //   const game = await this.gameplayModel.findOne({ gameId }).exec();
+  //   if (!game.rounds[game.currentRound].players.includes(userId))
+  //     game.rounds[game.currentRound].players.push(userId);
+  //
+  //   if (game.ready.length === game.rounds[game.currentRound].players.length)
+  //     return game.rounds[game.currentRound];
+  //   else return undefined;
+  // }
+
+
   async findOne(id: string) {
-    return await this.gameRepository.findOne({
+    const game = await this.gameRepository.findOne({
       where: { id },
       relations: {
         creator: true,
         players: true,
-        situations: true,
-        pictures: true,
       }
     });
+    const gameplay = await this.gameplayModel.findOne({ gameId: game.id });
+    return { ...game, gameplay };
   }
 
   async findByName(name: string) {
@@ -77,17 +93,62 @@ export class GamesService {
     });
   }
 
+  async playRound(gameId: string) {
+    const gameplay = await this.gameplayModel.findOne({ gameId }).exec();
+    const situationId = gameplay.stack.pop();
+    if (!situationId) return undefined;
+    await gameplay.save();
+
+    return situationId;
+  }
+
+  async doStep(gameId: string, cardId: string, userId: string) {
+    const game = await this.findOne(gameId);
+    const gameplay = await this.gameplayModel.findOne({ gameId });
+    const step = { userId, picture: cardId };
+    const result = await gameplay.save();
+
+    return undefined;
+  }
+
   async join(userId: string, gameId: string) {
     const user = await this.usersService.findOne(userId);
-    const game = await this.findOne(gameId);
+    let game = await this.findOne(gameId);
+    const gameplay = await this.gameplayModel.findOne({ id: game.gameplayID });
 
     if (!user || !game) throw Error('Нет игры или пользователя');
 
     const userIsExist = game.players.some((user) => user.id === userId);
 
-    if (userIsExist) throw new Error('Игрок уже есть в комнате');
+    if (!userIsExist) {
+      game.players.push(user);
+      game = await this.gameRepository.save(game);
+    }
 
-    game.players.push(user);
+    gameplay.currentRound.players.push({
+      id: user.id,
+      cards: user.activeDeck,
+      nickname: user.nickname,
+      avatarURL: user.avatar,
+    });
+    gameplay.currentRound.ready.set(userId, false);
+    gameplay.save();
+
+    return game;
+  }
+
+  async getGameplay(gameId: string) {
+    return this.gameplayModel.findOne({ gameId }).exec();
+  }
+
+  async leave(userId: string) {
+    const user = await this.usersService.findOne(userId);
+    const game = user.currentGame;
+
+    const gameplay = await this.gameplayModel.findOne({ gameId: game.id });
+    gameplay.currentRound.players = gameplay.currentRound.players.filter((player) => player.id !== userId);
+    gameplay.save();
+
     return await this.gameRepository.save(game);
   }
 
@@ -118,43 +179,14 @@ export class GamesService {
   }
 
   async setPlayerStatus(gameId: string, userId: string, status: boolean) {
-    const gameplay = await this.gameplayModel.findOne({ gameId });
-    gameplay.ready.forEach((user, i) => {
-      if (user.userId === userId) gameplay.ready[i].ready = status;
-    });
-
-    gameplay.save();
+    const gameplay = await this.gameplayModel.findOne({ gameId: gameId });
+    const isExists = gameplay.currentRound.ready.has(userId);
+    if (isExists) gameplay.currentRound.ready.set(userId, status);
   }
 
-  async start2(userId: string, gameId: string) {
-    const user = await this.usersService.findOne(userId);
-
-    // if (game.players.length != game.playersCount)
-    //   throw new Error('Недостаточно игроков');
-
-    // const newGameplay = await this.gameModel.create({
-    //   gameId: game.id,
-    //   stack: stack,
-    // });
-
-    // if (user.id !== game.creator.id)
-    //   throw new Error('Упс нет прав братишка!');
-    //
-    // if (game.status !== PlayStatus.Pending)
-    //   throw new Error('Игра уже идет или закончилась');
+  async getMyCards(userId: string) {}
 
 
 
-    const gameplay = await this.gameplayModel.findOne({
-      gameId: gameId,
-    });
 
-    if (!checkReady(gameplay.ready)) throw new Error('Не все игроки готовы');
-
-    // return await this.start(game);
-  }
-
-  async getMyCards(userId: string) {
-
-  }
 }

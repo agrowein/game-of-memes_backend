@@ -18,7 +18,7 @@ export class GameInterceptor implements NestInterceptor {
 
     const user = await this.usersService.findOne(id);
 
-    client.user.currentGame = user.currentGame ?? null;
+    client.user.currentGame = user?.currentGame ?? null;
 
     return next.handle();
   }

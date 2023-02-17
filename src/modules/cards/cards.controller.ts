@@ -4,40 +4,38 @@ import {
   Get,
   Param,
   Post,
-  Query,
-  UseGuards,
 } from '@nestjs/common';
 import { CardsService } from './cards.service';
-import { Card, CardType } from './entities/card.entity';
-import { CreateCardDto } from './dto/create-card.dto';
-import { AccessTokenGuard } from '../auth/access-token.guard';
+import { CreateSituationDto } from "./dto/create-situation.dto";
+import { CreateReactionDto } from "./dto/create-reaction.dto";
+
 
 @Controller('cards')
 export class CardsController {
   constructor(private readonly cardsService: CardsService) {}
 
-  @Get()
-  async getAll() {
-    return await this.cardsService.findAll();
+  @Get('reactions')
+  async getAllReactions() {
+    return await this.cardsService.findAllReactions();
   }
 
-  @Get()
-  async getAllByType(@Query('type') type: CardType) {
-    return await this.cardsService.findAllByType(type);
+  @Get('situations')
+  async getAllSituations() {
+    return await this.cardsService.findAllSituations();
   }
 
-  @Get(':id')
-  async getById(@Param('id') id: string) {
-    return await this.cardsService.findOne(id);
+  // @Get(':id')
+  // async getById(@Param('id') id: string) {
+  //   return await this.cardsService.findOne(id);
+  // }
+
+  @Post('situation')
+  createSituation(@Body() dto: CreateSituationDto) {
+    return this.cardsService.createSituation(dto);
   }
 
-  @Post()
-  create(@Body() dto: CreateCardDto) {
-    return this.cardsService.create(dto);
-  }
-
-  @Post()
-  async save(@Body() card: Card) {
-    return await this.cardsService.save(card);
+  @Post('reaction')
+  createReaction(@Body() dto: CreateReactionDto) {
+    return this.cardsService.createReaction(dto);
   }
 }

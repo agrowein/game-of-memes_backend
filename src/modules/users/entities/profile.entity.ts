@@ -7,7 +7,7 @@ import {
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { User } from './user.entity';
-import { Card } from '../../cards/entities/card.entity';
+import { Reaction } from "../../cards/entities/reaction.entity";
 
 @Entity('profiles')
 export class Profile {
@@ -20,7 +20,7 @@ export class Profile {
   @Column({ default: 0 })
   likes: number;
 
-  @ManyToMany(() => Card)
+  @ManyToMany(() => Reaction)
   @JoinTable()
-  cards: Card[];
+  cards: Reaction[];
 }

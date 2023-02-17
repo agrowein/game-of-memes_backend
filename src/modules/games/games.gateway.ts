@@ -23,7 +23,6 @@ import { CardsService } from "../cards/cards.service";
 import { remove } from 'lodash';
 
 @UseGuards(SocketGuard)
-@UseInterceptors(GameInterceptor)
 @WebSocketGateway(80, {
   cors: {
     origin: '*',
@@ -66,7 +65,15 @@ export class GamesGateway
     }
   }
 
-  @SubscribeMessage(GameMessages.Status)
+  @UseInterceptors(GameInterceptor)
+  @SubscribeMessage('leave')
+  async handleLeave(client: Socket) {
+    const game = await this.gameService.leave(client.user.id);
+    this.server.emit(GameEmits.UpdatedGame, game);
+  }
+
+  @UseInterceptors(GameInterceptor)
+  @SubscribeMessage('update-status')
   async handleChangeStatus(client: Socket, status: boolean) {
     try {
       const user = await this.usersService.findOne(client.user.id);
@@ -74,13 +81,22 @@ export class GamesGateway
 
       this.server.to(user.currentGame.id).emit(GameEmits.ChangeStatus, {
         userId: user.id,
-        newStatus: status,
+        status: status,
       });
     } catch (e) {
       client.emit('error', e.message);
     }
   }
 
+  @UseInterceptors(GameInterceptor)
+  @SubscribeMessage('refresh')
+  async handleRefresh(client: Socket, id: string) {
+    const gameplay = await this.gameService.getGameplay(id);
+
+    client.emit('frame', gameplay);
+  }
+
+  @UseInterceptors(GameInterceptor)
   @SubscribeMessage(GameMessages.Delete)
   async handleDeleteAllGames(client: Socket, id: string) {
     try {
@@ -94,6 +110,7 @@ export class GamesGateway
     }
   }
 
+  @UseInterceptors(GameInterceptor)
   @SubscribeMessage(GameMessages.Start)
   async handleStart(client: Socket) {
     try {
@@ -107,40 +124,47 @@ export class GamesGateway
     }
   }
 
+  @UseInterceptors(GameInterceptor)
+  @SubscribeMessage(GameMessages.ReadyPlayRound)
+  async handleReadyPlay() {}
+
+  @UseInterceptors(GameInterceptor)
   @SubscribeMessage('get-decks')
   async getDeck(client: Socket) {
     const game = await this.gameService.findOne(client.user.currentGame.id);
-    client.emit('decks',  { situations: game.situations, pictures: game.pictures });
+    client.emit('decks');
   }
 
-  @SubscribeMessage('check-access-step')
-  async handleCheckAccess(client: Socket) {
-    const gameId = client.user.currentGame.id;
-    const game = await this.gameplayModel.findOne({ gameId });
-
-    const userId = game.stack[game.stack.length - 1];
-
-    if (userId === client.user.id) client.emit('access', true);
-    else client.emit('access', false);
-  }
-
-  @SubscribeMessage(GameMessages.ChooseSituation)
+  @UseInterceptors(GameInterceptor)
+  @SubscribeMessage('do-step')
   async handleDoStep(client: Socket, cardId: string) {
     try {
-      const game = await this.gameService.findOne(client.user.currentGame.id);
-      game.situations = remove(game.situations, (s) => s.id === cardId);
-      await this.gameService.update(client.user.currentGame.id, game);
+      const userId = client.user.id;
+      const gameId = client.user.currentGame.id;
 
-      this.server.to(game.id).emit(GameEmits.PlayerChooseSituation, cardId);
+      const reactions = await this.gameService.doStep(gameId, cardId, userId);
+
+      if (reactions) {
+        this.server.to(gameId).emit('reactions', reactions);
+      }
     } catch (e) {
       throw e;
     }
   }
 
-  @SubscribeMessage('play-next-round')
+  @UseInterceptors(GameInterceptor)
+  @SubscribeMessage('play-round')
   async handlePlayRound(client: Socket) {
+    const situation = await this.gameService.playRound(client.user.currentGame.id);
 
+    if (!situation) {
+      this.server.to(client.user.currentGame.id).emit('game-over');
+      return;
+    }
+
+    this.server.to(client.user.currentGame.id).emit('situation', situation);
   }
+
 
   afterInit(server: any): any {}
 

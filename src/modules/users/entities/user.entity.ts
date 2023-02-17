@@ -1,12 +1,13 @@
 import {
   Column,
-  Entity,
+  Entity, JoinTable, ManyToMany,
   ManyToOne, OneToMany,
   OneToOne,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 import { Profile } from './profile.entity';
 import { Game } from '../../games/entities/game.entity';
+import { Reaction } from "../../cards/entities/reaction.entity";
 
 @Entity('users')
 export class User {
@@ -31,9 +32,10 @@ export class User {
   @OneToOne(() => Profile, (profile) => profile.user)
   profile: Profile;
 
-  @ManyToOne(() => Game, game => game.players)
+  @ManyToOne(() => Game, game => game.players, { cascade: true })
   currentGame: Game;
 
-  @Column({ nullable: true })
-  lastSockedId: string;
+  @ManyToMany(() => Reaction)
+  @JoinTable()
+  activeDeck: Reaction[];
 }
