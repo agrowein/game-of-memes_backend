@@ -52,7 +52,15 @@ export class GamesService {
     const { currentGame } = await this.usersService.findOne(userId);
     currentGame.startedAt = new Date();
     currentGame.status = PlayStatus.Started;
-    return await this.gameRepository.save(currentGame);
+    const gameplay = await this.gameplayModel.findOne({ gameId: currentGame.id });
+    const allPlayersReady = !gameplay.currentRound.players.some((player) => gameplay.currentRound.ready.get(player.id) === false);
+
+    if (!allPlayersReady || gameplay.currentRound.players.length < 2) throw new Error('Недостаточно игроков');
+
+    gameplay.currentRound.status = 'started';
+    await this.gameRepository.save(currentGame);
+
+    return await gameplay.save();
   }
 
   async findAll() {
@@ -62,16 +70,6 @@ export class GamesService {
       },
     });
   }
-
-  // async playerReadyPlayRound(gameId: string, userId: string) {
-  //   const game = await this.gameplayModel.findOne({ gameId }).exec();
-  //   if (!game.rounds[game.currentRound].players.includes(userId))
-  //     game.rounds[game.currentRound].players.push(userId);
-  //
-  //   if (game.ready.length === game.rounds[game.currentRound].players.length)
-  //     return game.rounds[game.currentRound];
-  //   else return undefined;
-  // }
 
 
   async findOne(id: string) {
