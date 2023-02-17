@@ -115,11 +115,8 @@ export class GamesGateway
   @SubscribeMessage(GameMessages.Start)
   async handleStart(client: Socket) {
     try {
-      const game = await this.gameService.start(client.user.id);
-      setTimeout(() => {
-        this.server.to(game.id).emit('game-start');
-      }, 5000);
-
+      const gameplay = await this.gameService.start(client.user.id);
+      this.server.to(gameplay.gameId).emit('game-start');
     } catch (e) {
       client.emit('error', e.message);
     }
