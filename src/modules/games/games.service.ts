@@ -10,6 +10,8 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Gameplay } from "./interfaces/Gameplay.interface";
 import { randomUUID } from "crypto";
+import { IPlayer } from "./interfaces/Player.interface";
+import { ISituation } from "./interfaces/Situation.interface";
 
 
 @Injectable()
@@ -62,6 +64,33 @@ export class GamesService {
 
     return await gameplay.save();
   }
+
+  async handleReaction(reactionId: string, gameId: string, playerId) {
+    const gameplay = await this.gameplayModel.findOne({gameId});
+    const isExists = gameplay.currentRound.reactions.has(playerId);
+
+    if (isExists) return gameplay;
+
+    gameplay.currentRound.reactions.set(playerId, gameId);
+    return await gameplay.save();
+  }
+
+  async playNextRound(gameId: string) {
+    const gameplay = await this.gameplayModel.findOne({ gameId });
+    const lastRound = gameplay.currentRound;
+    lastRound.status = 'ended';
+    const newRound = {
+      status: 'pending',
+      players: [...lastRound.players],
+      ready: new Map<string, boolean>(),
+      situation: gameplay.stack.pop(),
+      reactions: new Map<string, string>(),
+    };
+    gameplay.rounds.push(lastRound);
+    gameplay.currentRound = newRound;
+    return gameplay.save();
+  }
+
 
   async findAll() {
     return await this.gameRepository.find({
@@ -135,7 +164,7 @@ export class GamesService {
   }
 
   async getGameplay(gameId: string) {
-    return this.gameplayModel.findOne({ gameId }).exec();
+    return this.gameplayModel.findOne({ gameId });
   }
 
   async leave(userId: string) {
@@ -144,6 +173,8 @@ export class GamesService {
 
     const gameplay = await this.gameplayModel.findOne({ gameId: game.id });
     gameplay.currentRound.players = gameplay.currentRound.players.filter((player) => player.id !== userId);
+    gameplay.currentRound.ready.delete(userId);
+    gameplay.currentRound.reactions.delete(userId);
     gameplay.save();
 
     return await this.gameRepository.save(game);

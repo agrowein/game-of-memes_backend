@@ -123,6 +123,24 @@ export class GamesGateway
   }
 
   @UseInterceptors(GameInterceptor)
+  @SubscribeMessage('reaction')
+  async handleReaction(client: Socket, reactionId: string) {
+    try {
+      const gameplay = await this.gameService.handleReaction(reactionId, client.user.currentGame.id, client.user.id);
+      const allPlayersDoStep = !gameplay.currentRound.players.some((player) => {
+        return !!gameplay.currentRound.reactions.get(player.id) === false;
+      });
+      if (allPlayersDoStep) {
+        this.server.to(client.user.currentGame.id).emit('show-reactions');
+        await this.gameService.playNextRound(client.user.currentGame.id);
+      }
+      this.server.to(client.user.currentGame.id).emit('frame', gameplay);
+    } catch (e) {
+      client.emit('error', e.message);
+    }
+  }
+
+  @UseInterceptors(GameInterceptor)
   @SubscribeMessage(GameMessages.ReadyPlayRound)
   async handleReadyPlay() {}
 

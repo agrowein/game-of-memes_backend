@@ -4,7 +4,7 @@ import { ISituation } from "./Situation.interface";
 
 export interface Gameplay extends Document {
   readonly gameId: string;
-  readonly currentRound: IFrame;
+  currentRound: IFrame;
   readonly stack: ISituation[];
   readonly rounds: IFrame[];
 }
